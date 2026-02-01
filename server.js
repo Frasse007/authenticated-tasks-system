@@ -1,5 +1,6 @@
 const express = require('express');
-const { db, Project, Task } = require('./database/setup');
+const bcrypt = require('bcryptjs');
+const { db, Project, Task, User } = require('./database/setup');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -194,6 +195,42 @@ app.delete('/api/tasks/:id', async (req, res) => {
     } catch (error) {
         console.error('Error deleting task:', error);
         res.status(500).json({ error: 'Failed to delete task' });
+    }
+});
+
+// POST /api/register - Creates new user/login
+app.post('/api/register', async (req, res) => {
+    try {
+        const { username, email, password } = req.body;
+
+        // Checks if user already exist with that email
+        const existingUser = await User.findOne({ where: { email } });
+        if (existingUser) {
+            return res.status(400).json({ error: 'User with this email already exists' });
+        }
+
+        // Hash password before storing in db
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        // Creates new user in db with hashed password
+        const newUser = await User.create({
+            username,
+            email,
+            password: hashedPassword
+        });
+
+        // Returns success message and user info
+        res.status(201).json({ message: 'User registered successfully', 
+            user: {
+                id: newUser.id,
+                username: newUser.username,
+                email: newUser.email
+            }
+        });
+    } catch (error) {
+        console.error('Error registering user:', error);
+        res.status(500).json({ error: 'Failed to register user' });
     }
 });
 
