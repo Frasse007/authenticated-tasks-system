@@ -302,6 +302,17 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
+// POST /api/logout - Ends session with logout
+app.post('/api/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if(err) {
+            console.error('Error destroying the session', err);
+            return res.status(500).json({ error: 'Failed to logout' });
+        }
+        res.status(200).json({ message: 'Logout successful' });
+    });
+});
+
 // Start server
 app.listen(PORT, () => {
     console.log(`Server running on port http://localhost:${PORT}`);
