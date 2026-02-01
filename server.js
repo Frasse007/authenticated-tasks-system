@@ -81,7 +81,7 @@ app.get('/api/projects/:id', async (req, res) => {
 });
 
 // POST /api/projects - Create new project
-app.post('/api/projects', async (req, res) => {
+app.post('/api/projects', requireAuth, async (req, res) => {
     try {
         const { name, description, status, dueDate } = req.body;
         
@@ -89,7 +89,8 @@ app.post('/api/projects', async (req, res) => {
             name,
             description,
             status,
-            dueDate
+            dueDate,
+            userId: req.user.id
         });
         
         res.status(201).json(newProject);
